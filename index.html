@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Astro Burger — Sabores de Outro Planeta!</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
+
+  :root {
+    --gold: #FFB800;
+    --gold-dark: #CC8800;
+    --red: #E63030;
+    --space: #080B1A;
+    --space-mid: #0E1530;
+    --space-card: #111827;
+    --text: #F0E6D3;
+    --muted: #8899BB;
+    --green: #22C55E;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--space);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* STARS BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, white 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 60%, white 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 15%, white 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 80%, white 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 35%, white 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 20% 85%, rgba(255,184,0,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 65% 50%, white 0%, transparent 100%),
+      radial-gradient(1px 1px at 40% 40%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 10%, white 0%, transparent 100%),
+      radial-gradient(2px 2px at 5% 50%, rgba(255,184,0,0.4) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* HEADER */
+  header {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 32px 16px 24px;
+    background: radial-gradient(ellipse at top, #1a2040 0%, transparent 70%);
+    border-bottom: 1px solid rgba(255,184,0,0.2);
+  }
+
+  .logo-title {
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.4rem, 8vw, 4rem);
+    line-height: 1;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .logo-title span:first-child { color: white; }
+  .logo-title span:last-child { color: var(--gold); display: block; font-size: 85%; }
+
+  .tagline {
+    font-size: 1rem;
+    color: var(--gold);
+    letter-spacing: 3px;
+    margin-top: 6px;
+    text-transform: uppercase;
+  }
+
+  /* CART FLOATING */
+  .cart-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(8,11,26,0.95);
+    border-bottom: 2px solid var(--gold);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(8px);
+  }
+
+  .cart-info { font-size: 0.95rem; color: var(--muted); }
+  .cart-info strong { color: var(--gold); font-size: 1.1rem; }
+
+  .btn-whatsapp {
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-whatsapp:disabled {
+    background: #2a3a2a;
+    color: #556655;
+    cursor: not-allowed;
+  }
+  .btn-whatsapp:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+  }
+
+  /* MAIN */
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 16px 12px 120px;
+  }
+
+  /* SECTION */
+  .section-title {
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 20px 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, rgba(255,184,0,0.4), transparent);
+  }
+
+  /* ITEM CARD */
+  .item-card {
+    background: var(--space-card);
+    border: 1px solid rgba(255,184,0,0.1);
+    border-radius: 12px;
+    padding: 14px 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+  }
+  .item-card:hover { border-color: rgba(255,184,0,0.35); }
+  .item-card.selected {
+    border-color: var(--gold);
+    background: #161f10;
+  }
+
+  .item-info { flex: 1; }
+  .item-name {
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: white;
+    margin-bottom: 3px;
+  }
+  .item-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .item-price {
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 900;
+    font-size: 1.05rem;
+    color: var(--gold);
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+
+  /* COUNTER */
+  .counter {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: #1a2240;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,184,0,0.2);
+  }
+  .counter button {
+    background: none;
+    border: none;
+    color: var(--gold);
+    font-size: 1.3rem;
+    font-weight: 700;
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    transition: background 0.15s;
+    line-height: 1;
+  }
+  .counter button:hover { background: rgba(255,184,0,0.15); }
+  .counter span {
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: white;
+    min-width: 28px;
+    text-align: center;
+  }
+
+  /* SIZE SELECTOR */
+  .size-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .size-btn {
+    background: #1a2240;
+    border: 1px solid rgba(255,184,0,0.2);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .size-btn:hover, .size-btn.active {
+    background: var(--gold);
+    color: var(--space);
+    border-color: var(--gold);
+  }
+
+  .size-card {
+    background: var(--space-card);
+    border: 1px solid rgba(255,184,0,0.1);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .size-card .item-name {
+    margin-bottom: 10px;
+  }
+  .size-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .size-row:last-child { border-bottom: none; }
+  .size-label { font-size: 0.9rem; color: var(--muted); }
+  .size-price { font-family: 'Exo 2', sans-serif; font-weight: 700; color: var(--gold); }
+
+  /* OBSERVATIONS */
+  .obs-section {
+    margin-top: 20px;
+    background: var(--space-card);
+    border: 1px solid rgba(255,184,0,0.1);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .obs-section label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .obs-section textarea {
+    width: 100%;
+    background: #0e1530;
+    border: 1px solid rgba(255,184,0,0.2);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    padding: 10px;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .obs-section textarea:focus { border-color: var(--gold); }
+
+  /* DELIVERY TYPE */
+  .delivery-section {
+    margin-top: 10px;
+    background: var(--space-card);
+    border: 1px solid rgba(255,184,0,0.1);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .delivery-section label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  .delivery-options { display: flex; gap: 10px; }
+  .delivery-btn {
+    flex: 1;
+    background: #1a2240;
+    border: 1px solid rgba(255,184,0,0.2);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .delivery-btn.active {
+    background: var(--gold);
+    color: var(--space);
+    border-color: var(--gold);
+  }
+
+  .name-input {
+    width: 100%;
+    background: #0e1530;
+    border: 1px solid rgba(255,184,0,0.2);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    padding: 10px;
+    outline: none;
+    margin-top: 10px;
+    transition: border-color 0.2s;
+  }
+  .name-input:focus { border-color: var(--gold); }
+  .name-input::placeholder { color: #445566; }
+
+  /* CART SUMMARY */
+  .cart-summary {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(8,11,26,0.97);
+    border-top: 2px solid var(--gold);
+    padding: 14px 16px;
+    z-index: 99;
+    backdrop-filter: blur(12px);
+  }
+  .cart-items-list {
+    max-height: 120px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    display: none;
+  }
+  .cart-items-list.visible { display: block; }
+  .cart-item-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    padding: 3px 0;
+    color: var(--muted);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .cart-item-line span:last-child { color: var(--gold); }
+
+  .cart-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .cart-total {
+    font-family: 'Exo 2', sans-serif;
+  }
+  .cart-total .label { font-size: 0.8rem; color: var(--muted); }
+  .cart-total .value { font-size: 1.4rem; font-weight: 900; color: var(--gold); }
+
+  .btn-send {
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 24px;
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 900;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    flex: 1;
+    justify-content: center;
+    letter-spacing: 1px;
+  }
+  .btn-send:disabled {
+    background: #1a2a1a;
+    color: #334433;
+    cursor: not-allowed;
+  }
+  .btn-send:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(37,211,102,0.5);
+  }
+
+  .toggle-cart {
+    background: none;
+    border: 1px solid rgba(255,184,0,0.3);
+    border-radius: 8px;
+    color: var(--gold);
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding: 20px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-title">
+    <span>🚀 Astro</span>
+    <span>Burger</span>
+  </div>
+  <p class="tagline">✦ Sabores de Outro Planeta ✦</p>
+</header>
+
+<main id="app">
+
+  <!-- BURGERS ESPECIAIS -->
+  <div class="section-title">🍔 Burgers Especiais</div>
+
+  <div class="item-card" onclick="toggleItem('astro-burger', 'Astro Burger', 31)">
+    <div class="item-info">
+      <div class="item-name">Astro Burger</div>
+      <div class="item-desc">Pão, hambúrguer, 2 fatias de queijo, ovo, milho, ervilha, batata palha, alface, tomate e maionese</div>
+      <div class="item-price">R$ 31,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('astro-burger', -1)">−</button>
+      <span id="qty-astro-burger">0</span>
+      <button onclick="changeQty('astro-burger', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="item-card" onclick="toggleItem('frangonauta', 'Frangonauta', 32)">
+    <div class="item-info">
+      <div class="item-name">Frangonauta</div>
+      <div class="item-desc">Pão, filé de frango, 2 fatias de queijo, ovo, milho, ervilha, batata palha, alface, tomate e maionese</div>
+      <div class="item-price">R$ 32,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('frangonauta', -1)">−</button>
+      <span id="qty-frangonauta">0</span>
+      <button onclick="changeQty('frangonauta', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="item-card" onclick="toggleItem('anel-saturno', 'Anel de Saturno', 36)">
+    <div class="item-info">
+      <div class="item-name">Anel de Saturno</div>
+      <div class="item-desc">Pão, 2 hambúrgueres, ovo, cebola roxa, queijo mussarela, alface, tomate e maionese</div>
+      <div class="item-price">R$ 36,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('anel-saturno', -1)">−</button>
+      <span id="qty-anel-saturno">0</span>
+      <button onclick="changeQty('anel-saturno', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="item-card" onclick="toggleItem('smash-chicken', 'Smash Chicken Burger', 32)">
+    <div class="item-info">
+      <div class="item-name">Smash Chicken Burger</div>
+      <div class="item-desc">Pão, 2 hambúrgueres de frango, queijo mussarela, cheddar, alface, tomate e maionese</div>
+      <div class="item-price">R$ 32,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('smash-chicken', -1)">−</button>
+      <span id="qty-smash-chicken">0</span>
+      <button onclick="changeQty('smash-chicken', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="item-card" onclick="toggleItem('space-burger', 'Space Burger', 35)">
+    <div class="item-info">
+      <div class="item-name">Space Burger</div>
+      <div class="item-desc">Pão, 2 hambúrgueres, cheddar, bacon, batata palha, molho, alface, pepino e maionese</div>
+      <div class="item-price">R$ 35,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('space-burger', -1)">−</button>
+      <span id="qty-space-burger">0</span>
+      <button onclick="changeQty('space-burger', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="item-card" onclick="toggleItem('kids', 'Kids', 18)">
+    <div class="item-info">
+      <div class="item-name">Kids</div>
+      <div class="item-desc">Pão, hambúrguer, 2 fatias de queijo</div>
+      <div class="item-price">R$ 18,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('kids', -1)">−</button>
+      <span id="qty-kids">0</span>
+      <button onclick="changeQty('kids', 1)">+</button>
+    </div>
+  </div>
+
+  <!-- XIS -->
+  <div class="section-title">🧀 Xis</div>
+
+  <div class="item-card" onclick="toggleItem('xis-salada', 'Xis Salada', 30)">
+    <div class="item-info">
+      <div class="item-name">Xis Salada</div>
+      <div class="item-desc">Pão, hambúrguer, 2 fatias de queijo, milho, ervilha, batata palha, alface, tomate e maionese</div>
+      <div class="item-price">R$ 30,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('xis-salada', -1)">−</button>
+      <span id="qty-xis-salada">0</span>
+      <button onclick="changeQty('xis-salada', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="item-card" onclick="toggleItem('xis-coracao', 'Xis Coração', 36)">
+    <div class="item-info">
+      <div class="item-name">Xis Coração</div>
+      <div class="item-desc">Pão, coração, 2 fatias de queijo, ovo, milho, ervilha, batata palha, alface, tomate e maionese</div>
+      <div class="item-price">R$ 36,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('xis-coracao', -1)">−</button>
+      <span id="qty-xis-coracao">0</span>
+      <button onclick="changeQty('xis-coracao', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="item-card" onclick="toggleItem('xis-bacon', 'Xis Bacon', 36)">
+    <div class="item-info">
+      <div class="item-name">Xis Bacon</div>
+      <div class="item-desc">Pão, bacon, hambúrguer, 2 fatias de queijo, ovo, milho, ervilha, batata palha, alface, tomate e maionese</div>
+      <div class="item-price">R$ 36,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('xis-bacon', -1)">−</button>
+      <span id="qty-xis-bacon">0</span>
+      <button onclick="changeQty('xis-bacon', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="item-card" onclick="toggleItem('xis-coracao-bacon', 'Xis Coração com Bacon', 39)">
+    <div class="item-info">
+      <div class="item-name">Xis Coração com Bacon</div>
+      <div class="item-desc">Pão, coração, bacon, 2 fatias de queijo, ovo, milho, ervilha, batata palha, alface, tomate e maionese</div>
+      <div class="item-price">R$ 39,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('xis-coracao-bacon', -1)">−</button>
+      <span id="qty-xis-coracao-bacon">0</span>
+      <button onclick="changeQty('xis-coracao-bacon', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="item-card" onclick="toggleItem('xis-alcatra', 'Xis Alcatra', 41)">
+    <div class="item-info">
+      <div class="item-name">Xis Alcatra</div>
+      <div class="item-desc">Pão, alcatra, 2 fatias de queijo, ovo, milho, ervilha, batata palha, alface, tomate e maionese</div>
+      <div class="item-price">R$ 41,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('xis-alcatra', -1)">−</button>
+      <span id="qty-xis-alcatra">0</span>
+      <button onclick="changeQty('xis-alcatra', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="item-card" onclick="toggleItem('xis-alcatra-bacon', 'Xis Alcatra com Bacon', 43)">
+    <div class="item-info">
+      <div class="item-name">Xis Alcatra com Bacon</div>
+      <div class="item-desc">Pão, alcatra, bacon, 2 fatias de queijo, ovo, milho, ervilha, batata palha, alface, tomate e maionese</div>
+      <div class="item-price">R$ 43,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('xis-alcatra-bacon', -1)">−</button>
+      <span id="qty-xis-alcatra-bacon">0</span>
+      <button onclick="changeQty('xis-alcatra-bacon', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="item-card" onclick="toggleItem('xis-picanha', 'Xis Picanha', 43)">
+    <div class="item-info">
+      <div class="item-name">Xis Picanha</div>
+      <div class="item-desc">Pão, picanha, 2 fatias de queijo, ovo, milho, ervilha, batata palha, alface, tomate e maionese</div>
+      <div class="item-price">R$ 43,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('xis-picanha', -1)">−</button>
+      <span id="qty-xis-picanha">0</span>
+      <button onclick="changeQty('xis-picanha', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="item-card" onclick="toggleItem('xis-gauderio', 'Xis Gaúdério', 40)">
+    <div class="item-info">
+      <div class="item-name">Xis Gaúdério</div>
+      <div class="item-desc">Pão, frango, calabresa, bacon, picanha, coração, 2 fatias de queijo, alface, tomate e maionese</div>
+      <div class="item-price">R$ 40,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('xis-gauderio', -1)">−</button>
+      <span id="qty-xis-gauderio">0</span>
+      <button onclick="changeQty('xis-gauderio', 1)">+</button>
+    </div>
+  </div>
+
+  <!-- CACHORRO QUENTE -->
+  <div class="section-title">🌭 Cachorro-Quente</div>
+
+  <div class="item-card" onclick="toggleItem('cq-simples', 'Cachorro Quente Simples', 21)">
+    <div class="item-info">
+      <div class="item-name">Cachorro Quente Simples</div>
+      <div class="item-desc">Pão, salsicha, molho, milho, ervilha, pepino, queijo ralado</div>
+      <div class="item-price">R$ 21,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('cq-simples', -1)">−</button>
+      <span id="qty-cq-simples">0</span>
+      <button onclick="changeQty('cq-simples', 1)">+</button>
+    </div>
+  </div>
+
+  <div class="item-card" onclick="toggleItem('cq-duplo', 'Cachorro Quente Duplo', 23)">
+    <div class="item-info">
+      <div class="item-name">Cachorro Quente Duplo</div>
+      <div class="item-desc">Pão, 2 salsichas, molho, milho, ervilha, pepino, queijo ralado</div>
+      <div class="item-price">R$ 23,00</div>
+    </div>
+    <div class="counter" onclick="event.stopPropagation()">
+      <button onclick="changeQty('cq-duplo', -1)">−</button>
+      <span id="qty-cq-duplo">0</span>
+      <button onclick="changeQty('cq-duplo', 1)">+</button>
+    </div>
+  </div>
+
+  <!-- BATATA FRITA -->
+  <div class="section-title">🍟 Batata Frita</div>
+
+  <div class="size-card">
+    <div class="item-name">Batata Frita</div>
+    <div class="size-row">
+      <span class="size-label">Pequena</span>
+      <span class="size-price">R$ 14,00</span>
+      <div class="counter">
+        <button onclick="changeQty('batata-p', -1)">−</button>
+        <span id="qty-batata-p">0</span>
+        <button onclick="changeQty('batata-p', 1)">+</button>
+      </div>
+    </div>
+    <div class="size-row">
+      <span class="size-label">Média</span>
+      <span class="size-price">R$ 20,00</span>
+      <div class="counter">
+        <button onclick="changeQty('batata-m', -1)">−</button>
+        <span id="qty-batata-m">0</span>
+        <button onclick="changeQty('batata-m', 1)">+</button>
+      </div>
+    </div>
+    <div class="size-row">
+      <span class="size-label">Grande</span>
+      <span class="size-price">R$ 36,00</span>
+      <div class="counter">
+        <button onclick="changeQty('batata-g', -1)">−</button>
+        <span id="qty-batata-g">0</span>
+        <button onclick="changeQty('batata-g', 1)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="size-card">
+    <div class="item-name">Batata Frita com Cheddar e Bacon 🧀🥓</div>
+    <div class="size-row">
+      <span class="size-label">Pequena</span>
+      <span class="size-price">R$ 20,00</span>
+      <div class="counter">
+        <button onclick="changeQty('batata-cb-p', -1)">−</button>
+        <span id="qty-batata-cb-p">0</span>
+        <button onclick="changeQty('batata-cb-p', 1)">+</button>
+      </div>
+    </div>
+    <div class="size-row">
+      <span class="size-label">Média</span>
+      <span class="size-price">R$ 39,00</span>
+      <div class="counter">
+        <button onclick="changeQty('batata-cb-m', -1)">−</button>
+        <span id="qty-batata-cb-m">0</span>
+        <button onclick="changeQty('batata-cb-m', 1)">+</button>
+      </div>
+    </div>
+    <div class="size-row">
+      <span class="size-label">Grande</span>
+      <span class="size-price">R$ 69,00</span>
+      <div class="counter">
+        <button onclick="changeQty('batata-cb-g', -1)">−</button>
+        <span id="qty-batata-cb-g">0</span>
+        <button onclick="changeQty('batata-cb-g', 1)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CESTO PETISCOS -->
+  <div class="section-title">🧺 Cesto com Petiscos</div>
+  <div class="item-desc" style="color:var(--muted);font-size:0.82rem;margin-bottom:10px;padding:0 4px;">Peixe à milanesa, frango, queijo à milanesa, polenta frita e batata frita</div>
+
+  <div class="size-card">
+    <div class="size-row">
+      <span class="size-label">Pequeno</span>
+      <span class="size-price">R$ 63,00</span>
+      <div class="counter">
+        <button onclick="changeQty('cesto-p', -1)">−</button>
+        <span id="qty-cesto-p">0</span>
+        <button onclick="changeQty('cesto-p', 1)">+</button>
+      </div>
+    </div>
+    <div class="size-row">
+      <span class="size-label">Médio</span>
+      <span class="size-price">R$ 84,00</span>
+      <div class="counter">
+        <button onclick="changeQty('cesto-m', -1)">−</button>
+        <span id="qty-cesto-m">0</span>
+        <button onclick="changeQty('cesto-m', 1)">+</button>
+      </div>
+    </div>
+    <div class="size-row">
+      <span class="size-label">Grande</span>
+      <span class="size-price">R$ 96,00</span>
+      <div class="counter">
+        <button onclick="changeQty('cesto-g', -1)">−</button>
+        <span id="qty-cesto-g">0</span>
+        <button onclick="changeQty('cesto-g', 1)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REFRIGERANTES -->
+  <div class="section-title">🥤 Refrigerantes</div>
+
+  <div class="size-card">
+    <div class="item-name" style="margin-bottom:10px;color:var(--muted);font-size:0.85rem;">2 Litros</div>
+    <div class="size-row">
+      <span class="size-label">Coca-Cola 2L</span>
+      <span class="size-price">R$ 16,00</span>
+      <div class="counter">
+        <button onclick="changeQty('coca-2l', -1)">−</button>
+        <span id="qty-coca-2l">0</span>
+        <button onclick="changeQty('coca-2l', 1)">+</button>
+      </div>
+    </div>
+    <div class="size-row">
+      <span class="size-label">Coca-Cola Zero 2L</span>
+      <span class="size-price">R$ 16,00</span>
+      <div class="counter">
+        <button onclick="changeQty('coca-zero-2l', -1)">−</button>
+        <span id="qty-coca-zero-2l">0</span>
+        <button onclick="changeQty('coca-zero-2l', 1)">+</button>
+      </div>
+    </div>
+    <div class="size-row">
+      <span class="size-label">Charrua 2L</span>
+      <span class="size-price">R$ 12,00</span>
+      <div class="counter">
+        <button onclick="changeQty('charrua-2l', -1)">−</button>
+        <span id="qty-charrua-2l">0</span>
+        <button onclick="changeQty('charrua-2l', 1)">+</button>
+      </div>
+    </div>
+    <div class="size-row">
+      <span class="size-label">Fruki Laranja 2L</span>
+      <span class="size-price">R$ 12,00</span>
+      <div class="counter">
+        <button onclick="changeQty('fruki-laranja', -1)">−</button>
+        <span id="qty-fruki-laranja">0</span>
+        <button onclick="changeQty('fruki-laranja', 1)">+</button>
+      </div>
+    </div>
+    <div class="size-row">
+      <span class="size-label">Fruki Uva 2L</span>
+      <span class="size-price">R$ 12,00</span>
+      <div class="counter">
+        <button onclick="changeQty('fruki-uva', -1)">−</button>
+        <span id="qty-fruki-uva">0</span>
+        <button onclick="changeQty('fruki-uva', 1)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="size-card">
+    <div class="item-name" style="margin-bottom:10px;color:var(--muted);font-size:0.85rem;">600 ml</div>
+    <div class="size-row">
+      <span class="size-label">Coca-Cola 600ml</span>
+      <span class="size-price">R$ 8,00</span>
+      <div class="counter">
+        <button onclick="changeQty('coca-600', -1)">−</button>
+        <span id="qty-coca-600">0</span>
+        <button onclick="changeQty('coca-600', 1)">+</button>
+      </div>
+    </div>
+    <div class="size-row">
+      <span class="size-label">Coca-Cola Zero 600ml</span>
+      <span class="size-price">R$ 8,00</span>
+      <div class="counter">
+        <button onclick="changeQty('coca-zero-600', -1)">−</button>
+        <span id="qty-coca-zero-600">0</span>
+        <button onclick="changeQty('coca-zero-600', 1)">+</button>
+      </div>
+    </div>
+    <div class="size-row">
+      <span class="size-label">Fanta 600ml</span>
+      <span class="size-price">R$ 8,00</span>
+      <div class="counter">
+        <button onclick="changeQty('fanta-600', -1)">−</button>
+        <span id="qty-fanta-600">0</span>
+        <button onclick="changeQty('fanta-600', 1)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="size-card">
+    <div class="item-name" style="margin-bottom:10px;color:var(--muted);font-size:0.85rem;">Lata 350ml</div>
+    <div class="size-row">
+      <span class="size-label">Coca-Cola Lata</span>
+      <span class="size-price">R$ 7,00</span>
+      <div class="counter">
+        <button onclick="changeQty('coca-lata', -1)">−</button>
+        <span id="qty-coca-lata">0</span>
+        <button onclick="changeQty('coca-lata', 1)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELIVERY + NOME + OBS -->
+  <div class="delivery-section">
+    <label>📍 TIPO DE PEDIDO</label>
+    <div class="delivery-options">
+      <button class="delivery-btn active" id="btn-retirada" onclick="setDelivery('retirada')">🏠 Retirar no local</button>
+      <button class="delivery-btn" id="btn-delivery" onclick="setDelivery('delivery')">🛵 Delivery</button>
+    </div>
+    <input type="text" class="name-input" id="customer-name" placeholder="Seu nome (opcional)" />
+    <input type="text" class="name-input" id="customer-address" placeholder="Endereço para entrega" style="display:none;margin-top:6px;" />
+  </div>
+
+  <div class="obs-section">
+    <label>📝 OBSERVAÇÕES (opcional)</label>
+    <textarea id="observations" rows="3" placeholder="Ex: sem cebola, molho à parte, ponto da carne..."></textarea>
+  </div>
+
+</main>
+
+<!-- FIXED CART -->
+<div class="cart-summary" id="cart-summary">
+  <div class="cart-items-list" id="cart-items-list"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <div class="label">TOTAL DO PEDIDO</div>
+      <div class="value" id="cart-total-value">R$ 0,00</div>
+    </div>
+    <button class="toggle-cart" onclick="toggleCartList()" id="toggle-btn">▲ Ver itens</button>
+    <button class="btn-send" id="btn-send" onclick="sendWhatsApp()" disabled>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.554 4.122 1.523 5.855L.057 23.454a.75.75 0 00.918.918l5.6-1.466A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.9 0-3.678-.51-5.21-1.4l-.374-.22-3.876 1.016 1.016-3.877-.22-.374A10 10 0 1112 22z"/></svg>
+      Enviar Pedido
+    </button>
+  </div>
+</div>
+
+<script>
+const prices = {
+  'astro-burger': { name: 'Astro Burger', price: 31 },
+  'frangonauta': { name: 'Frangonauta', price: 32 },
+  'anel-saturno': { name: 'Anel de Saturno', price: 36 },
+  'smash-chicken': { name: 'Smash Chicken Burger', price: 32 },
+  'space-burger': { name: 'Space Burger', price: 35 },
+  'kids': { name: 'Kids', price: 18 },
+  'xis-salada': { name: 'Xis Salada', price: 30 },
+  'xis-coracao': { name: 'Xis Coração', price: 36 },
+  'xis-bacon': { name: 'Xis Bacon', price: 36 },
+  'xis-coracao-bacon': { name: 'Xis Coração com Bacon', price: 39 },
+  'xis-alcatra': { name: 'Xis Alcatra', price: 41 },
+  'xis-alcatra-bacon': { name: 'Xis Alcatra com Bacon', price: 43 },
+  'xis-picanha': { name: 'Xis Picanha', price: 43 },
+  'xis-gauderio': { name: 'Xis Gaúdério', price: 40 },
+  'cq-simples': { name: 'Cachorro Quente Simples', price: 21 },
+  'cq-duplo': { name: 'Cachorro Quente Duplo', price: 23 },
+  'batata-p': { name: 'Batata Frita P', price: 14 },
+  'batata-m': { name: 'Batata Frita M', price: 20 },
+  'batata-g': { name: 'Batata Frita G', price: 36 },
+  'batata-cb-p': { name: 'Batata Cheddar/Bacon P', price: 20 },
+  'batata-cb-m': { name: 'Batata Cheddar/Bacon M', price: 39 },
+  'batata-cb-g': { name: 'Batata Cheddar/Bacon G', price: 69 },
+  'cesto-p': { name: 'Cesto Petiscos P', price: 63 },
+  'cesto-m': { name: 'Cesto Petiscos M', price: 84 },
+  'cesto-g': { name: 'Cesto Petiscos G', price: 96 },
+  'coca-2l': { name: 'Coca-Cola 2L', price: 16 },
+  'coca-zero-2l': { name: 'Coca-Cola Zero 2L', price: 16 },
+  'charrua-2l': { name: 'Charrua 2L', price: 12 },
+  'fruki-laranja': { name: 'Fruki Laranja 2L', price: 12 },
+  'fruki-uva': { name: 'Fruki Uva 2L', price: 12 },
+  'coca-600': { name: 'Coca-Cola 600ml', price: 8 },
+  'coca-zero-600': { name: 'Coca-Cola Zero 600ml', price: 8 },
+  'fanta-600': { name: 'Fanta 600ml', price: 8 },
+  'coca-lata': { name: 'Coca-Cola Lata 350ml', price: 7 },
+};
+
+const quantities = {};
+let deliveryType = 'retirada';
+let cartVisible = false;
+
+function changeQty(id, delta) {
+  quantities[id] = Math.max(0, (quantities[id] || 0) + delta);
+  const el = document.getElementById('qty-' + id);
+  if (el) el.textContent = quantities[id];
+  updateCart();
+}
+
+function toggleItem(id, name, price) {
+  changeQty(id, quantities[id] > 0 ? -quantities[id] : 1);
+}
+
+function setDelivery(type) {
+  deliveryType = type;
+  document.getElementById('btn-retirada').classList.toggle('active', type === 'retirada');
+  document.getElementById('btn-delivery').classList.toggle('active', type === 'delivery');
+  document.getElementById('customer-address').style.display = type === 'delivery' ? 'block' : 'none';
+}
+
+function updateCart() {
+  let total = 0;
+  let hasItems = false;
+  const listEl = document.getElementById('cart-items-list');
+  listEl.innerHTML = '';
+
+  for (const [id, qty] of Object.entries(quantities)) {
+    if (qty > 0 && prices[id]) {
+      hasItems = true;
+      const subtotal = qty * prices[id].price;
+      total += subtotal;
+      const line = document.createElement('div');
+      line.className = 'cart-item-line';
+      line.innerHTML = `<span>${qty}x ${prices[id].name}</span><span>R$ ${subtotal.toFixed(2).replace('.',',')}</span>`;
+      listEl.appendChild(line);
+    }
+  }
+
+  document.getElementById('cart-total-value').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+  document.getElementById('btn-send').disabled = !hasItems;
+  document.getElementById('toggle-btn').style.display = hasItems ? 'block' : 'none';
+}
+
+function toggleCartList() {
+  cartVisible = !cartVisible;
+  const list = document.getElementById('cart-items-list');
+  list.classList.toggle('visible', cartVisible);
+  document.getElementById('toggle-btn').textContent = cartVisible ? '▼ Fechar' : '▲ Ver itens';
+}
+
+function sendWhatsApp() {
+  const name = document.getElementById('customer-name').value.trim();
+  const address = document.getElementById('customer-address').value.trim();
+  const obs = document.getElementById('observations').value.trim();
+
+  let msg = '🚀 *PEDIDO ASTRO BURGER*\n';
+  msg += '━━━━━━━━━━━━━━━━━━\n';
+
+  if (name) msg += `👤 *Cliente:* ${name}\n`;
+  msg += `📍 *Tipo:* ${deliveryType === 'delivery' ? '🛵 Delivery' : '🏠 Retirada no local'}\n`;
+  if (deliveryType === 'delivery' && address) msg += `🗺️ *Endereço:* ${address}\n`;
+  msg += '━━━━━━━━━━━━━━━━━━\n';
+
+  let total = 0;
+  for (const [id, qty] of Object.entries(quantities)) {
+    if (qty > 0 && prices[id]) {
+      const subtotal = qty * prices[id].price;
+      total += subtotal;
+      msg += `✅ ${qty}x ${prices[id].name} — R$ ${subtotal.toFixed(2).replace('.',',')}\n`;
+    }
+  }
+
+  msg += '━━━━━━━━━━━━━━━━━━\n';
+  msg += `💰 *TOTAL: R$ ${total.toFixed(2).replace('.', ',')}*\n`;
+
+  if (obs) msg += `\n📝 *Obs:* ${obs}`;
+
+  const phone = '5554991855919';
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+updateCart();
+</script>
+</body>
+</html>
