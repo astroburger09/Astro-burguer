@@ -872,7 +872,15 @@
       <button class="delivery-btn" id="btn-delivery" onclick="setDelivery('delivery')">🛵 Delivery</button>
     </div>
     <input type="text" class="name-input" id="customer-name" placeholder="Seu nome (opcional)" />
-    <input type="text" class="name-input" id="customer-address" placeholder="Endereço para entrega" style="display:none;margin-top:6px;" />
+    <div id="delivery-fields" style="display:none;">
+      <select class="name-input" id="customer-bairro" onchange="updateCart()" style="margin-top:6px;cursor:pointer;">
+        <option value="">🏘️ Selecione seu bairro...</option>
+      </select>
+      <div id="taxa-info" style="font-size:0.85rem;color:var(--gold);margin-top:6px;padding:0 4px;display:none;">
+        🛵 Taxa de entrega: <strong id="taxa-valor"></strong>
+      </div>
+      <input type="text" class="name-input" id="customer-address" placeholder="Endereço completo (rua, número)" style="margin-top:6px;" />
+    </div>
   </div>
 
   <div class="obs-section">
@@ -899,6 +907,23 @@
 </div>
 
 <script>
+const bairros = [
+  { nome: 'Colina do Sol', taxa: 5 },
+  { nome: 'Centenário', taxa: 7 },
+  { nome: 'Pioneiro', taxa: 8 },
+  { nome: 'Santa Catarina', taxa: 12 },
+  { nome: 'Santa Lúcia', taxa: 15 },
+  { nome: 'Ana Rech', taxa: 20 },
+  { nome: 'Vila Ipê', taxa: 5 },
+  { nome: 'Cânion', taxa: 8 },
+  { nome: 'Belo', taxa: 7 },
+  { nome: 'Fátima', taxa: 12 },
+  { nome: 'Portal da Maestra', taxa: 8 },
+  { nome: 'Brandalise', taxa: 15 },
+  { nome: 'Centro', taxa: 20 },
+  { nome: 'Santa Fé', taxa: 7 },
+  { nome: 'Parque Oásis', taxa: 8 },
+];
 const prices = {
   'astro-burger': { name: 'Astro Burger', price: 31 },
   'frangonauta': { name: 'Frangonauta', price: 32 },
@@ -940,6 +965,30 @@ const quantities = {};
 let deliveryType = 'retirada';
 let cartVisible = false;
 
+// Popular select de bairros
+(function() {
+  const sel = document.getElementById('customer-bairro');
+  bairros.forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b.taxa;
+    opt.dataset.nome = b.nome;
+    opt.textContent = b.taxa > 0 ? b.nome + ' — R$ ' + b.taxa.toFixed(2).replace('.',',') : b.nome;
+    sel.appendChild(opt);
+  });
+})();
+
+function getTaxaEntrega() {
+  if (deliveryType !== 'delivery') return 0;
+  const sel = document.getElementById('customer-bairro');
+  return sel.value ? parseFloat(sel.value) : 0;
+}
+
+function getBairroNome() {
+  const sel = document.getElementById('customer-bairro');
+  if (!sel.value) return '';
+  return sel.options[sel.selectedIndex].dataset.nome;
+}
+
 function changeQty(id, delta) {
   quantities[id] = Math.max(0, (quantities[id] || 0) + delta);
   const el = document.getElementById('qty-' + id);
@@ -955,7 +1004,8 @@ function setDelivery(type) {
   deliveryType = type;
   document.getElementById('btn-retirada').classList.toggle('active', type === 'retirada');
   document.getElementById('btn-delivery').classList.toggle('active', type === 'delivery');
-  document.getElementById('customer-address').style.display = type === 'delivery' ? 'block' : 'none';
+  document.getElementById('delivery-fields').style.display = type === 'delivery' ? 'block' : 'none';
+  updateCart();
 }
 
 function updateCart() {
@@ -976,6 +1026,24 @@ function updateCart() {
     }
   }
 
+  // Taxa de entrega
+  const taxa = getTaxaEntrega();
+  const taxaInfo = document.getElementById('taxa-info');
+  const taxaValor = document.getElementById('taxa-valor');
+  if (deliveryType === 'delivery' && document.getElementById('customer-bairro').value) {
+    taxaInfo.style.display = 'block';
+    taxaValor.textContent = taxa > 0 ? 'R$ ' + taxa.toFixed(2).replace('.',',') : 'Grátis';
+    if (taxa > 0) {
+      const line = document.createElement('div');
+      line.className = 'cart-item-line';
+      line.innerHTML = `<span>🛵 Taxa de entrega (${getBairroNome()})</span><span>R$ ${taxa.toFixed(2).replace('.',',')}</span>`;
+      listEl.appendChild(line);
+    }
+  } else {
+    if(taxaInfo) taxaInfo.style.display = 'none';
+  }
+
+  total += taxa;
   document.getElementById('cart-total-value').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
   document.getElementById('btn-send').disabled = !hasItems;
   document.getElementById('toggle-btn').style.display = hasItems ? 'block' : 'none';
@@ -998,7 +1066,11 @@ function sendWhatsApp() {
 
   if (name) msg += `👤 *Cliente:* ${name}\n`;
   msg += `📍 *Tipo:* ${deliveryType === 'delivery' ? '🛵 Delivery' : '🏠 Retirada no local'}\n`;
-  if (deliveryType === 'delivery' && address) msg += `🗺️ *Endereço:* ${address}\n`;
+  if (deliveryType === 'delivery') {
+    const bairroNome = getBairroNome();
+    if (bairroNome) msg += `🏘️ *Bairro:* ${bairroNome}\n`;
+    if (address) msg += `🗺️ *Endereço:* ${address}\n`;
+  }
   msg += '━━━━━━━━━━━━━━━━━━\n';
 
   let total = 0;
@@ -1008,6 +1080,12 @@ function sendWhatsApp() {
       total += subtotal;
       msg += `✅ ${qty}x ${prices[id].name} — R$ ${subtotal.toFixed(2).replace('.',',')}\n`;
     }
+  }
+
+  const taxa = getTaxaEntrega();
+  if (taxa > 0) {
+    msg += `🛵 Taxa de entrega — R$ ${taxa.toFixed(2).replace('.',',')}\n`;
+    total += taxa;
   }
 
   msg += '━━━━━━━━━━━━━━━━━━\n';
